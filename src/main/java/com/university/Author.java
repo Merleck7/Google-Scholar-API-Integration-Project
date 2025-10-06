@@ -19,6 +19,11 @@ public class Author {
         this.publications = publications;
     }
 
+    // Constructor simplificado (para pruebas)
+    public Author(String name, String affiliation) {
+        this(name, affiliation, "N/A", List.of());
+    }
+
     public String getName() {
         return name;
     }
