@@ -1,7 +1,6 @@
 # 🎓 Google Scholar API - Academic Project
 
-This academic project implements a **Java client** that connects to the **Google Scholar Author API** using **SerpAPI**, applying the **MVC (Model-View-Controller)** design pattern.  
-The goal is to retrieve and display academic author information, including name, affiliation, and featured publications.
+This academic project implements a **Java client** that connects to the **Google Scholar Author API** using **SerpAPI**, following the **MVC (Model-View-Controller)** design pattern. It now also integrates **SQLite** to store articles and author metadata.
 
 ---
 
@@ -18,10 +17,12 @@ Google-api/
     ├── main/
     │   └── java/
     │       └── com/university/
-    │           ├── Author.java              
+    │           ├── Author.java               
     │           ├── AuthorController.java
     │           ├── Main.java
-    │           └── TestEnv.java
+    │           ├── TestEnv.java
+    │           ├── DatabaseManager.java
+    │           └── ArticleDAO.java
     │
     └── test/
         └── java/
@@ -35,103 +36,99 @@ Google-api/
 
 - **Java 17+**
 - **Apache Maven**
-- A valid **API Key** from [SerpAPI](https://serpapi.com/)
+- A valid **SerpAPI Key** ([SerpAPI](https://serpapi.com/))
 
 ---
 
 ## 🔑 Setting the API Key
 
 1. Open your system’s **Environment Variables**.
-2. Create a new variable named:
+2. Create a variable named:
 
    ```
    SERPAPI_KEY
    ```
 
-3. Set its value to your API Key, for example:
+3. Assign your API Key, for example:
 
    ```
    6229dc8de6489ba9rytsdg68f0h67j562b4f1b
    ```
 
-4. Save the changes and **restart your terminal or IDE**.
+4. Save and restart your terminal or IDE.
 
 ---
 
 ## 🏃‍♂️ Running the Project
 
-From the project root, execute:
+From the project root, run:
 
 ```bash
-mvn exec:java
+mvn exec:java -Dexec.mainClass=com.university.Main -Dexec.args="<author_id>"
 ```
 
-If the system prints:
-
-```
-✅ Scholar API running correctly!
-✅ API Key loaded from environment.
-```
-
-it means the API Key was successfully detected.
-
----
-
-## 🔍 Query an Author
-
-To query a specific author, use their **Google Scholar ID**.  
-Example: Geoffrey Hinton has the ID `JicYPdAAAAAJ`.
-
-Run the command:
+For example, for Geoffrey Hinton (ID `JicYPdAAAAAJ`):
 
 ```bash
-mvn exec:java "-Dexec.mainClass=com.university.Main" "-Dexec.args=JicYPdAAAAAJ"
+mvn exec:java -Dexec.mainClass=com.university.Main -Dexec.args="JicYPdAAAAAJ"
 ```
 
 Expected output:
 
 ```
 ✅ Scholar API running correctly!
+✅ Database initialized successfully.
 ✅ API Key loaded from environment.
+📚 Found 20 articles.
+✅ Article saved: ...
+👤 Name: ...
+🏛️ Affiliation: ...
+🔗 Profile: ...
+```
 
-👤 Author Information:
-📘 Name: Geoffrey Hinton
-🏛️ Affiliation: Emeritus Prof. Computer Science, University of Toronto
+---
 
-📚 Top Publications:
- - Imagenet classification with deep convolutional neural networks
- - Deep learning
- - Visualizing data using t-SNE
- - Learning internal representations by error-propagation
- - Dropout: a simple way to prevent neural networks from overfitting
+## 🗄️ SQLite Database
+
+- Database: `scholar.db`
+- Table: `articles`
+
+```sql
+CREATE TABLE articles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    authors TEXT,
+    publication_date TEXT,
+    abstract TEXT,
+    link TEXT,
+    keywords TEXT,
+    cited_by INTEGER
+);
+```
+
+- Article data is automatically saved when running the application.
+- You can query it using **SQLite Viewer** or the CLI:
+
+```bash
+sqlite3 scholar.db
+SELECT * FROM articles;
 ```
 
 ---
 
 ## 🧠 Design Pattern
 
-The project follows the **MVC** pattern:
-
-- **Model (`Author.java`)** → Represents the author’s data structure.  
-- **View (`AuthorView.java`)** → Displays information in the console.  
-- **Controller (`AuthorController.java`)** → Manages API connection logic and data flow.  
-- **Main (`Main.java`)** → Entry point of the application.
-
----
-
-## 🧩 Libraries Used
-
-- `org.json` → For handling JSON responses.  
-- `java.net.HttpURLConnection` → For HTTP GET requests.  
-- `org.apache.maven.plugins:maven-exec-plugin` → To execute the project from the command line.
+- **Model (`Author.java`)** → Represents author data.
+- **View (Console)** → Displays information.
+- **Controller (`AuthorController.java`)** → Handles API and database logic.
+- **Main (`Main.java`)** → Application entry point.
 
 ---
 
 ## 🧪 Testing
 
-The `TestEnv.java` file checks that the **environment variable** is correctly set and that the application can run without errors.
-
-Run tests with:
+- `TestEnv.java` checks that the **API Key** is correctly set.
+- Run tests with:
 
 ```bash
 mvn test
@@ -139,11 +136,11 @@ mvn test
 
 ---
 
-## 📚 Resources
+## ⚠️ Considerations
 
-- [Official SerpAPI Documentation](https://serpapi.com/)
-- [Google Scholar Author API](https://serpapi.com/google-scholar-author-api)
-- [MVC Design Pattern in Java Guide](https://www.geeksforgeeks.org/mvc-design-pattern/)
+- **API limits**: respect SerpAPI usage restrictions.
+- **Error handling**: app manages network, API, and database errors.
+- `abstract` and `keywords` are stored as `"N/A"` if unavailable.
 
 ---
 

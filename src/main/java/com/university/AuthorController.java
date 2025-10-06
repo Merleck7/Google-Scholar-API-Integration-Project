@@ -9,13 +9,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * Controller class responsible for fetching author data
- * from the Google Scholar API. 
- *
- * For this educational project, the data is simulated.
- * In a real application, this class would make HTTP GET
- * requests using a library like Apache HttpClient or HttpURLConnection.
+ * from the Google Scholar API and saving articles in the database.
  */
 public class AuthorController {
     private final String apiKey;
@@ -48,15 +45,28 @@ public class AuthorController {
             }
 
             String name = authorData.get("name").getAsString();
-            String affiliation = authorData.get("affiliations") != null ? authorData.get("affiliations").getAsString() : "N/A";
-            String urlProfile = authorData.get("link") != null ? authorData.get("link").getAsString() : "N/A";
+            String affiliation = authorData.has("affiliations") ? authorData.get("affiliations").getAsString() : "N/A";
+            String urlProfile = authorData.has("link") ? authorData.get("link").getAsString() : "N/A";
 
             List<String> publications = new ArrayList<>();
             if (json.has("articles")) {
                 JsonArray articles = json.getAsJsonArray("articles");
                 for (int i = 0; i < Math.min(5, articles.size()); i++) {
                     JsonObject article = articles.get(i).getAsJsonObject();
-                    publications.add(article.get("title").getAsString());
+
+                    String title = article.has("title") ? article.get("title").getAsString() : "N/A";
+                    publications.add(title);
+
+                    String authors = article.has("authors") ? article.get("authors").getAsString() : "N/A";
+                    String publicationDate = article.has("year") ? article.get("year").getAsString() : "N/A";
+                    String abstractText = article.has("snippet") ? article.get("snippet").getAsString() : "N/A";
+                    String link = article.has("link") ? article.get("link").getAsString() : "N/A";
+                    String keywords = article.has("keywords") ? article.get("keywords").getAsJsonArray().toString() : "N/A";
+                    int citedBy = article.has("cited_by") ? article.getAsJsonObject("cited_by").get("value").getAsInt() : 0;
+
+                    // Guardar artículo en la base de datos
+                    ArticleDAO.saveArticleToDB(title, authors, publicationDate, abstractText, link, keywords, citedBy);
+                    System.out.println("✅ Article saved: " + title);
                 }
             }
 
